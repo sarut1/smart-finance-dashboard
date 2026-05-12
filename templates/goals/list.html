@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}เป้าหมายการออม{% endblock %}
+{% block page_title %}เป้าหมายการออม{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between mb-4">
+    <a href="{% url 'goals:create' %}" class="btn btn-sm" style="background: var(--neon-blue); color: #000; font-weight: 600;">
+        <i class="bi bi-plus-lg"></i> สร้างเป้าหมาย
+    </a>
+</div>
+
+<div class="row g-4">
+    {% for goal in goals %}
+    <div class="col-md-6">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h6 style="color: #e2e8f0;" class="mb-1">
+                        {% if goal.progress_percentage >= 100 %}🎉{% else %}🎯{% endif %}
+                        {{ goal.goal_name }}
+                    </h6>
+                    <small style="color: #8892a4;">ครบกำหนด {{ goal.deadline }}</small>
+                </div>
+                <form method="post" action="{% url 'goals:delete' goal.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('ยืนยันการลบ?')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="d-flex justify-content-between mb-2">
+                <span style="color: #e2e8f0;">฿{{ goal.current_amount|floatformat:2 }}</span>
+                <span style="color: #8892a4;">เป้าหมาย ฿{{ goal.target_amount|floatformat:2 }}</span>
+            </div>
+
+            <div class="progress mb-2" style="height: 10px; background: #1e2d3d;">
+                <div class="progress-bar" style="width: {{ goal.progress_percentage }}%;
+                    background: {% if goal.progress_percentage >= 100 %}#00ff88{% elif goal.progress_percentage >= 60 %}#00d4ff{% else %}#ffa502{% endif %};">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <span style="color: {% if goal.progress_percentage >= 100 %}#00ff88{% else %}#8892a4{% endif %}; font-size: 0.85rem;">
+                    {{ goal.progress_percentage }}%
+                    {% if goal.progress_percentage >= 100 %}— สำเร็จแล้ว! 🎉{% endif %}
+                </span>
+                {% if goal.progress_percentage < 100 %}
+                <button class="btn btn-sm" style="background: var(--neon-blue)20; color: var(--neon-blue); border: 1px solid var(--neon-blue)50;"
+                    data-bs-toggle="modal" data-bs-target="#depositModal{{ goal.pk }}">
+                    <i class="bi bi-plus-circle"></i> เพิ่มเงินออม
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div class="modal fade" id="depositModal{{ goal.pk }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #111827; border: 1px solid #1e2d3d;">
+                <div class="modal-header" style="border-bottom: 1px solid #1e2d3d;">
+                    <h6 class="modal-title" style="color: #e2e8f0;">เพิ่มเงินออม — {{ goal.goal_name }}</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" action="{% url 'goals:deposit' goal.pk %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <label class="form-label" style="color: #8892a4;">จำนวนเงิน (฿)</label>
+                        <input type="number" name="amount" step="0.01" min="1"
+                            class="form-control bg-dark text-white border-secondary" required>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #1e2d3d;">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                        <button type="submit" class="btn" style="background: var(--neon-blue); color: #000; font-weight: 600;">
+                            บันทึก
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-bullseye" style="font-size: 3rem; color: #1e2d3d;"></i>
+        <p class="mt-3" style="color: #8892a4;">ยังไม่มีเป้าหมายการออม</p>
+        <a href="{% url 'goals:create' %}" style="color: var(--neon-blue);">สร้างเป้าหมายแรก →</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}เพิ่มหมวดหมู่{% endblock %}
+{% block page_title %}เพิ่มหมวดหมู่{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label text-muted">ชื่อหมวดหมู่</label>
+                    <input type="text" name="name" class="form-control bg-dark text-white border-secondary" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">ประเภท</label>
+                    <select name="category_type" class="form-select bg-dark text-white border-secondary">
+                        <option value="expense">รายจ่าย</option>
+                        <option value="income">รายรับ</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">สี</label>
+                    <input type="color" name="color" value="#00d4ff" class="form-control form-control-color bg-dark border-secondary">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label text-muted">ไอคอน (Bootstrap Icons class)</label>
+                    <input type="text" name="icon" value="bi-tag" class="form-control bg-dark text-white border-secondary" placeholder="เช่น bi-cart, bi-house">
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn flex-fill" style="background: var(--neon-blue); color: #000; font-weight: 600;">
+                        บันทึก
+                    </button>
+                    <a href="{% url 'transactions:list' %}" class="btn btn-outline-secondary flex-fill">ยกเลิก</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}เพิ่มกระเป๋าเงิน{% endblock %}
+{% block page_title %}เพิ่มกระเป๋าเงิน{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label text-muted">ชื่อกระเป๋าเงิน</label>
+                    <input type="text" name="wallet_name" class="form-control bg-dark text-white border-secondary" required placeholder="เช่น ธนาคารกสิกร">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">ประเภท</label>
+                    <select name="wallet_type" class="form-select bg-dark text-white border-secondary">
+                        <option value="cash">เงินสด</option>
+                        <option value="bank">บัญชีธนาคาร</option>
+                        <option value="ewallet">กระเป๋าเงินดิจิทัล</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label text-muted">ยอดเงินเริ่มต้น (฿)</label>
+                    <input type="number" name="balance" step="0.01" value="0" class="form-control bg-dark text-white border-secondary">
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn flex-fill" style="background: var(--neon-blue); color: #000; font-weight: 600;">
+                        บันทึก
+                    </button>
+                    <a href="{% url 'wallets:list' %}" class="btn btn-outline-secondary flex-fill">ยกเลิก</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}รายการธุรกรรม{% endblock %}
+{% block page_title %}รายการธุรกรรม{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between mb-4">
+    <div class="d-flex gap-2">
+        <a href="{% url 'transactions:create' %}" class="btn btn-sm" style="background: var(--neon-blue); color: #000; font-weight: 600;">
+            <i class="bi bi-plus-lg"></i> เพิ่มรายการ
+        </a>
+        <a href="{% url 'transactions:category_create' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-tag"></i> เพิ่มหมวดหมู่
+        </a>
+    </div>
+    <form class="d-flex gap-2" method="get">
+        <input type="text" name="keyword" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="ค้นหา..." value="{{ request.GET.keyword }}">
+        <select name="type" class="form-select form-select-sm bg-dark text-white border-secondary">
+            <option value="">ทั้งหมด</option>
+            <option value="income">รายรับ</option>
+            <option value="expense">รายจ่าย</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-outline-info">ค้นหา</button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0">
+            <thead>
+                <tr style="border-bottom: 1px solid #1e2d3d;">
+                    <th>วันที่</th>
+                    <th>หมวดหมู่</th>
+                    <th>หมายเหตุ</th>
+                    <th>กระเป๋าเงิน</th>
+                    <th>ประเภท</th>
+                    <th class="text-end">จำนวนเงิน</th>
+                    <th class="text-center">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.date }}</td>
+                    <td>
+                        {% if t.category %}
+                        <span class="badge" style="background: {{ t.category.color }}20; color: {{ t.category.color }}; border: 1px solid {{ t.category.color }};">
+                            {{ t.category.name }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>{{ t.note|default:"-" }}</td>
+                    <td>{{ t.wallet.wallet_name|default:"-" }}</td>
+                    <td>
+                        {% if t.transaction_type == 'income' %}
+                        <span class="badge" style="background: #00ff8820; color: #00ff88;">รายรับ</span>
+                        {% else %}
+                        <span class="badge" style="background: #ff475720; color: #ff4757;">รายจ่าย</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end fw-bold" style="color: {% if t.transaction_type == 'income' %}#00ff88{% else %}#ff4757{% endif %};">
+                        {% if t.transaction_type == 'income' %}+{% else %}-{% endif %}฿{{ t.amount }}
+                    </td>
+                    <td class="text-center">
+                        <a href="{% url 'transactions:edit' t.pk %}" class="btn btn-sm btn-outline-info me-1">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="post" action="{% url 'transactions:delete' t.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('ยืนยันการลบ?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">ยังไม่มีรายการ — <a href="{% url 'transactions:create' %}" style="color: var(--neon-blue);">เพิ่มรายการแรก</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

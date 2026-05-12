@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% block title %}แดชบอร์ด{% endblock %}
+{% block page_title %}แดชบอร์ด{% endblock %}
+{% block content %}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card card-stat p-3">
+            <p style="color: #8892a4;" class="mb-1"><i class="bi bi-wallet2 me-1"></i>ยอดคงเหลือรวม</p>
+            <div class="stat-value">฿{{ total_balance|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat p-3" style="border-left-color: #00ff88;">
+            <p style="color: #8892a4;" class="mb-1"><i class="bi bi-arrow-down-circle me-1"></i>รายรับเดือนนี้</p>
+            <div class="stat-value" style="color: #00ff88;">฿{{ monthly_income|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat p-3" style="border-left-color: #ff4757;">
+            <p style="color: #8892a4;" class="mb-1"><i class="bi bi-arrow-up-circle me-1"></i>รายจ่ายเดือนนี้</p>
+            <div class="stat-value" style="color: #ff4757;">฿{{ monthly_expense|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat p-3" style="border-left-color: #ffa502;">
+            <p style="color: #8892a4;" class="mb-1"><i class="bi bi-graph-up me-1"></i>คงเหลือเดือนนี้</p>
+            <div class="stat-value" style="color: #ffa502;">฿{{ net_this_month|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-5">
+        <div class="card p-3 h-100">
+            <h6 class="mb-3" style="color: #e2e8f0;"><i class="bi bi-pie-chart me-2" style="color: var(--neon-blue);"></i>รายจ่ายตามหมวดหมู่</h6>
+            {% if has_expense_data %}
+            <canvas id="expenseChart" height="260"></canvas>
+            {% else %}
+            <div class="text-center text-muted py-5">ยังไม่มีข้อมูลรายจ่ายเดือนนี้</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card p-3 h-100">
+            <h6 class="mb-3" style="color: #e2e8f0;"><i class="bi bi-bar-chart me-2" style="color: var(--neon-blue);"></i>รายรับ vs รายจ่าย รายเดือน</h6>
+            <canvas id="incomeExpenseChart" height="260"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0" style="color: #e2e8f0;"><i class="bi bi-clock-history me-2" style="color: var(--neon-blue);"></i>รายการล่าสุด</h6>
+        <a href="{% url 'transactions:list' %}" style="color: var(--neon-blue); font-size: 0.85rem;">ดูทั้งหมด →</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0">
+            <thead>
+                <tr style="border-bottom: 1px solid #1e2d3d;">
+                    <th style="color: #8892a4;">วันที่</th>
+                    <th style="color: #8892a4;">หมวดหมู่</th>
+                    <th style="color: #8892a4;">หมายเหตุ</th>
+                    <th style="color: #8892a4;" class="text-end">จำนวนเงิน</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in recent_transactions %}
+                <tr>
+                    <td style="color: #8892a4;">{{ t.date }}</td>
+                    <td>
+                        {% if t.category %}
+                        <span class="badge" style="background: {{ t.category.color }}20; color: {{ t.category.color }};">
+                            {{ t.category.name }}
+                        </span>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td style="color: #8892a4;">{{ t.note|default:"-" }}</td>
+                    <td class="text-end fw-bold" style="color: {% if t.transaction_type == 'income' %}#00ff88{% else %}#ff4757{% endif %};">
+                        {% if t.transaction_type == 'income' %}+{% else %}-{% endif %}฿{{ t.amount|floatformat:2 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-3">ยังไม่มีรายการ</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Health Score -->
+<div class="card p-4">
+    <h6 class="mb-4" style="color: #e2e8f0;">
+        <i class="bi bi-heart-pulse me-2" style="color: var(--neon-blue);"></i>คะแนนสุขภาพการเงิน
+    </h6>
+    <div class="row align-items-center">
+        <div class="col-md-3 text-center">
+            <div style="position: relative; width: 140px; margin: 0 auto;">
+                <canvas id="healthChart" width="140" height="140"></canvas>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                    <div style="font-size: 2rem; font-weight: 700; color: {{ health.level_color }};">{{ health.total_score }}</div>
+                    <div style="font-size: 0.75rem; color: #8892a4;">/ 100</div>
+                </div>
+            </div>
+            <div class="mt-2">
+                <i class="bi {{ health.level_icon }}" style="color: {{ health.level_color }};"></i>
+                <span style="color: {{ health.level_color }}; font-weight: 600;"> {{ health.level }}</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small style="color: #8892a4;">การออมเงิน</small>
+                    <small style="color: #e2e8f0;">{{ health.saving_score }}/40</small>
+                </div>
+                <div class="progress" style="height: 6px; background: #1e2d3d;">
+                    <div class="progress-bar" style="width: {% widthratio health.saving_score 40 100 %}%; background: #00ff88;"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small style="color: #8892a4;">การควบคุมงบ</small>
+                    <small style="color: #e2e8f0;">{{ health.budget_score }}/35</small>
+                </div>
+                <div class="progress" style="height: 6px; background: #1e2d3d;">
+                    <div class="progress-bar" style="width: {% widthratio health.budget_score 35 100 %}%; background: #00d4ff;"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small style="color: #8892a4;">ความสม่ำเสมอ</small>
+                    <small style="color: #e2e8f0;">{{ health.consistency_score }}/25</small>
+                </div>
+                <div class="progress" style="height: 6px; background: #1e2d3d;">
+                    <div class="progress-bar" style="width: {% widthratio health.consistency_score 25 100 %}%; background: #ffa502;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <p style="color: #8892a4; font-size: 0.85rem;" class="mb-2">
+                <i class="bi bi-lightbulb me-1" style="color: var(--neon-blue);"></i>คำแนะนำ
+            </p>
+            {% for rec in health.recommendations %}
+            <div class="d-flex align-items-start gap-2 mb-2">
+                <i class="bi bi-check-circle mt-1" style="color: var(--neon-blue); font-size: 0.85rem; flex-shrink: 0;"></i>
+                <small style="color: #e2e8f0; line-height: 1.5;">{{ rec }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const chartLabels = {{ chart_labels|safe }};
+const chartData = {{ chart_data|safe }};
+const barLabels = {{ bar_labels|safe }};
+const barIncome = {{ bar_income|safe }};
+const barExpense = {{ bar_expense|safe }};
+const colors = ['#00d4ff','#00ff88','#ffa502','#ff4757','#a55eea','#fd9644'];
+
+if (chartData.length > 0) {
+    new Chart(document.getElementById('expenseChart'), {
+        type: 'doughnut',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                data: chartData,
+                backgroundColor: colors.slice(0, chartData.length),
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            plugins: { legend: { labels: { color: '#e2e8f0', padding: 16 } } },
+            cutout: '65%',
+        }
+    });
+}
+
+new Chart(document.getElementById('incomeExpenseChart'), {
+    type: 'bar',
+    data: {
+        labels: barLabels,
+        datasets: [
+            { label: 'รายรับ', data: barIncome, backgroundColor: '#00ff8880', borderColor: '#00ff88', borderWidth: 1 },
+            { label: 'รายจ่าย', data: barExpense, backgroundColor: '#ff475780', borderColor: '#ff4757', borderWidth: 1 }
+        ]
+    },
+    options: {
+        plugins: { legend: { labels: { color: '#e2e8f0' } } },
+        scales: {
+            x: { ticks: { color: '#8892a4' }, grid: { color: '#1e2d3d' } },
+            y: { ticks: { color: '#8892a4' }, grid: { color: '#1e2d3d' } }
+        }
+    }
+});
+
+const healthScore = {{ health.total_score }};
+const healthColor = '{{ health.level_color }}';
+new Chart(document.getElementById('healthChart'), {
+    type: 'doughnut',
+    data: {
+        datasets: [{
+            data: [healthScore, 100 - healthScore],
+            backgroundColor: [healthColor, '#1e2d3d'],
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        cutout: '75%',
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+    }
+});
+</script>
+{% endblock %}

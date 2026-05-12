@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}รายงาน{% endblock %}
+{% block page_title %}ออกรายงาน{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <div class="text-center mb-3">
+                <i class="bi bi-file-earmark-excel" style="font-size: 3rem; color: #00ff88;"></i>
+            </div>
+            <h6 class="text-center mb-2" style="color: #e2e8f0;">Excel Report</h6>
+            <p class="text-center mb-4" style="color: #8892a4; font-size: 0.85rem;">
+                ดาวน์โหลดรายการธุรกรรมทั้งหมดพร้อมสรุป
+            </p>
+            <a href="{% url 'reports:export_excel' %}" class="btn w-100" style="background: #00ff8820; color: #00ff88; border: 1px solid #00ff8850;">
+                <i class="bi bi-download me-2"></i>ดาวน์โหลด Excel
+            </a>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card p-4">
+            <div class="text-center mb-3">
+                <i class="bi bi-file-earmark-pdf" style="font-size: 3rem; color: #ff4757;"></i>
+            </div>
+            <h6 class="text-center mb-2" style="color: #e2e8f0;">PDF Report</h6>
+            <p class="text-center mb-4" style="color: #8892a4; font-size: 0.85rem;">
+                ดาวน์โหลดรายงานสรุปการเงินในรูปแบบ PDF
+            </p>
+            <a href="{% url 'reports:export_pdf' %}" class="btn w-100" style="background: #ff475720; color: #ff4757; border: 1px solid #ff475750;">
+                <i class="bi bi-download me-2"></i>ดาวน์โหลด PDF
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

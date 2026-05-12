@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}วิเคราะห์การเงิน{% endblock %}
+{% block page_title %}วิเคราะห์การเงิน{% endblock %}
+{% block content %}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card card-stat p-3">
+            <p style="color: #8892a4;" class="mb-1"><i class="bi bi-list-ul me-1"></i>รายการทั้งหมด</p>
+            <div class="stat-value">{{ total_transactions }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat p-3" style="border-left-color: #ff4757;">
+            <p style="color: #8892a4;" class="mb-1"><i class="bi bi-calendar-day me-1"></i>เฉลี่ยต่อวัน</p>
+            <div class="stat-value" style="color: #ff4757;">฿{{ avg_daily_expense }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat p-3" style="border-left-color: #ffa502;">
+            <p style="color: #8892a4;" class="mb-1"><i class="bi bi-tag me-1"></i>หมวดที่ใช้มากสุด</p>
+            <div class="stat-value" style="color: #ffa502; font-size: 1.2rem;">{{ top_category }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat p-3" style="border-left-color: #00ff88;">
+            <p style="color: #8892a4;" class="mb-1"><i class="bi bi-piggy-bank me-1"></i>อัตราการออม</p>
+            <div class="stat-value" style="color: #00ff88;">{{ saving_ratio }}%</div>
+        </div>
+    </div>
+</div>
+
+{% if insights %}
+<div class="card p-4 mb-4">
+    <h6 class="mb-3" style="color: #e2e8f0;"><i class="bi bi-lightbulb me-2" style="color: var(--neon-blue);"></i>Insights การเงิน</h6>
+    <div class="row g-3">
+        {% for insight in insights %}
+        <div class="col-md-6">
+            <div class="d-flex align-items-center gap-3 p-3 rounded" style="background: #111827; border: 1px solid {{ insight.color }}50;">
+                <i class="bi {{ insight.icon }}" style="color: {{ insight.color }}; font-size: 1.4rem; flex-shrink: 0;"></i>
+                <span style="font-size: 0.9rem; color: #e2e8f0; line-height: 1.5;">{{ insight.text }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6 class="mb-3" style="color: #e2e8f0;"><i class="bi bi-bar-chart me-2" style="color: var(--neon-blue);"></i>รายจ่ายรายสัปดาห์</h6>
+            <canvas id="weeklyChart" height="250"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6 class="mb-3" style="color: #e2e8f0;"><i class="bi bi-pie-chart me-2" style="color: var(--neon-blue);"></i>สัดส่วนรายจ่ายตามหมวดหมู่</h6>
+            <canvas id="categoryChart" height="250"></canvas>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const weeklyLabels = {{ weekly_labels|safe }};
+const weeklyData = {{ weekly_data|safe }};
+const categoryLabels = {{ category_labels|safe }};
+const categoryData = {{ category_data|safe }};
+const colors = ['#00d4ff','#00ff88','#ffa502','#ff4757','#a55eea','#fd9644'];
+
+new Chart(document.getElementById('weeklyChart'), {
+    type: 'bar',
+    data: {
+        labels: weeklyLabels,
+        datasets: [{
+            label: 'รายจ่าย',
+            data: weeklyData,
+            backgroundColor: '#00d4ff50',
+            borderColor: '#00d4ff',
+            borderWidth: 1,
+            borderRadius: 4,
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { labels: { color: '#e2e8f0' } }
+        },
+        scales: {
+            x: { ticks: { color: '#8892a4' }, grid: { color: '#1e2d3d' } },
+            y: { ticks: { color: '#8892a4' }, grid: { color: '#1e2d3d' } }
+        }
+    }
+});
+
+new Chart(document.getElementById('categoryChart'), {
+    type: 'pie',
+    data: {
+        labels: categoryLabels,
+        datasets: [{
+            data: categoryData,
+            backgroundColor: colors.slice(0, categoryData.length),
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { labels: { color: '#e2e8f0' } }
+        }
+    }
+});
+</script>
+{% endblock %}

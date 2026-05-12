@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}เพิ่มรายการ{% endblock %}
+{% block page_title %}เพิ่มรายการใหม่{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label text-muted">ประเภท</label>
+                    <select name="transaction_type" class="form-select bg-dark text-white border-secondary" required>
+                        <option value="expense">รายจ่าย</option>
+                        <option value="income">รายรับ</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">จำนวนเงิน (฿)</label>
+                    <input type="number" name="amount" step="0.01" min="0" class="form-control bg-dark text-white border-secondary" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">หมวดหมู่</label>
+                    <select name="category" class="form-select bg-dark text-white border-secondary">
+                        <option value="">-- เลือกหมวดหมู่ --</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">กระเป๋าเงิน</label>
+                    <select name="wallet" class="form-select bg-dark text-white border-secondary">
+                        <option value="">-- เลือกกระเป๋าเงิน --</option>
+                        {% for w in wallets %}
+                        <option value="{{ w.pk }}">{{ w.wallet_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">วันที่</label>
+                    <input type="date" name="date" value="{{ today }}" class="form-control bg-dark text-white border-secondary" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">หมายเหตุ</label>
+                    <input type="text" name="note" class="form-control bg-dark text-white border-secondary">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted">แท็ก</label>
+                    <input type="text" name="tags" class="form-control bg-dark text-white border-secondary" placeholder="เช่น อาหาร, เดินทาง">
+                </div>
+                <div class="mb-4 form-check">
+                    <input type="checkbox" name="is_recurring" class="form-check-input" id="recurring">
+                    <label class="form-check-label text-muted" for="recurring">รายการประจำ</label>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn flex-fill" style="background: var(--neon-blue); color: #000; font-weight: 600;">บันทึก</button>
+                    <a href="{% url 'transactions:list' %}" class="btn btn-outline-secondary flex-fill">ยกเลิก</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
