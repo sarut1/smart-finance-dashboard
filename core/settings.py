@@ -74,8 +74,8 @@ DATABASES = {
     }
 }
 
-DATABASE_URL = os.getenv('DATABASE_URL')
-if DATABASE_URL:
+DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
+if DATABASE_URL and DATABASE_URL.startswith('postgres'):
     DATABASES['default'] = dj_database_url.parse(DATABASE_URL)
 
 AUTH_PASSWORD_VALIDATORS = [
